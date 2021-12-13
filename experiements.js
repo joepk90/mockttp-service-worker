@@ -65,3 +65,67 @@
 
         // Inject 'Hello world' responses for all requests
     // await server.anyRequest().thenReply(200, "Hello world");
+
+
+
+
+
+
+
+
+
+
+     // await server.get('https://' + HOST).thenPassThrough({
+
+    //         beforeResponse: (response) => {
+
+    //             console.log(response);
+
+    //             return response;
+
+    //             console.log('test');
+
+    //             // Here you can access the real response:
+    //             // console.log(`Got ${response.statusCode} response with body: ${response.body.text}`);
+    
+    //             // Values returned here replace parts of the response:
+    //             if (response.headers['content-type']?.startsWith('text/html')) {
+    //                 // E.g. append to all HTML response bodies:
+    //                 return {
+    //                     headers: { 'content-type': 'text/html' },
+    //                     body: response.body.text
+    //                     .replace('</head>', serviceWorkerInclude + '</head>')
+    //                     .replace(/<h1.*?<\/h1>/g, '<h1>Pwned!</h1>')
+    //                 };
+    //             } else {
+    //                 return response;
+    //             }
+    //         }
+    //     });
+
+    //     await server.get(/.*/).thenPassThrough();
+    //     await server.anyRequest().thenPassThrough();
+
+
+
+    // Or wrap targets, transforming real requests & responses:
+    // const serverUpdate = await server.anyRequest().forHost(HOST).thenPassThrough({
+
+    //     beforeResponse: (response) => {
+    //         // Here you can access the real response:
+    //         // console.log(`Got ${response.statusCode} response with body: ${response.body.text}`);
+
+    //         // Values returned here replace parts of the response:
+    //         if (response.headers['content-type']?.startsWith('text/html')) {
+    //             // E.g. append to all HTML response bodies:
+    //             return {
+    //                 headers: { 'content-type': 'text/html' },
+    //                 body: response.body.text
+    //                 .replace('</head>', serviceWorkerInclude + '</head>')
+    //                 .replace(/<h1.*?<\/h1>/g, '<h1>Pwned!</h1>')
+    //             };
+    //         } else {
+    //             return {};
+    //         }
+    //     }
+    // });
