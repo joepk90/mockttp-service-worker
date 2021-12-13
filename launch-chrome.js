@@ -8,7 +8,7 @@ module.exports = async function launchChrome(url, server, caFingerprint) {
     await open(url, {
         app: {
             name: { // Pick the right name for Chrome on this platform:
-                darwin: 'google chrome beta',
+                darwin: 'chromium',
                 win32: 'chrome',
                 linux: 'google-chrome'
             }[process.platform],
