@@ -2,27 +2,15 @@
     const mockttp = require('mockttp');
     const path = require('path');
     var globToRegExp = require('glob-to-regexp');
+    var include = require('./includes.js');
 
     // Create a proxy server with a self-signed HTTPS CA certificate:
     const https = await mockttp.generateCACertificate();
     const server = mockttp.getLocal({ https });
 
-    const HOST = 'example.com'
-    
-    const serviceWorkerInclude = `
-        <script>
-            if ('serviceWorker' in navigator) {
-                window.addEventListener('load', function () {
-                    navigator.serviceWorker.register('/sw.js').then(function (response) {
-                        console.info('SW registered OK.');
-                    }).catch(function (error) {
-                        console.error('SW failed to register', error);
-                    });
-                });
-            }
-        </script>
-    `;
-
+    const HTTP = 'https://'
+    const ORIGIN = 'example.com'
+    const HOST = HTTP + ORIGIN;
 
     const beforeResponse = {
 
@@ -37,9 +25,8 @@
                 return {
                     headers: { 'content-type': 'text/html' },
                     body: response.body.text
-                    .replace('service-worker.js', 'sw.js')
-                    // .replace('</head>', serviceWorkerInclude + '</head>')
-                    .replace(/<h1.*?<\/h1>/g, '<h1>Pwned!</h1>')
+                    .replace('</head>', include.icons + include.manifest + include.serviceWorker + '</head>')
+                    .replace(/<h1.*?<\/h1>/g, '<h1>The page is being intercepted!</h1>')
                 };
             } else {
                 return response;
@@ -47,24 +34,33 @@
         }
     }
 
-
     await server.anyRequest().thenPassThrough()
-    
-
-    
-    await server.get('https://' + HOST).thenPassThrough(beforeResponse); 
-    await server.get(globToRegExp(`https://${HOST}/*`)).thenPassThrough(beforeResponse); 
-    await server.get('https://' + HOST + "/sw.js").thenFromFile(200, "./sw.js", {
+    await server.get(HOST).thenPassThrough(beforeResponse); 
+    await server.get(globToRegExp(`${HOST}/*`)).thenPassThrough(beforeResponse);
+    await server.get(HOST + "/manifest.json").thenFromFile(200, "./src/manifest.json");
+    await server.get(HOST + "/offline.html").thenFromFile(200, "./src/offline.html");
+    await server.get(HOST + "/sw.js").thenFromFile(200, "./src/sw.js", {
         'Content-Type': 'application/javascript'
     });
+
+    // icons rewrites
+    await server.get(HOST + "/app_icons/manifest-icon-192.png").thenFromFile(200, "./src/app_icons/manifest-icon-192.png");
+    await server.get(HOST + "/app_icons/manifest-icon-512.png").thenFromFile(200, "./src/app_icons/manifest-icon-512.png");
+    await server.get(HOST + "/app_icons/manifest-icon-192.png").thenFromFile(200, "./src/app_icons/manifest-icon-192.png");
+    await server.get(HOST + "/app_icons/manifest-icon-512.png").thenFromFile(200, "./src/app_icons/manifest-icon-512.png");
+
+    // TODO setup regex matching (not sure if this is possible)
+    // await server.get(globToRegExp(`${HOST}/app_icons/*`)).thenFromFile(200, globToRegExp(`./app_icons/*`));
+
     await server.start();
+
 
     const caFingerprint = mockttp.generateSPKIFingerprint(https.cert);
 
     // run npm run chrome, to start the server AND launch chrome
     if (process.argv[2] === 'chrome') {
         const launchChrome = require('./launch-chrome');
-        launchChrome('https://' + HOST, server, caFingerprint);
+        launchChrome(HOST, server, caFingerprint);
     } else {
         // Print out the server details for manual configuration:
         console.log(`Server running on port ${server.port}`);
