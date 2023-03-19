@@ -44,7 +44,9 @@
     });
 
     // Alernative Example:
-    // - pass request straight through to localhost (test a project under https)
+    // - Pass request straight through to localhost (test a project under https)
+    // - Note: works with SPA (Single Page Application), untested with MPA (Mutliple Page Application).
+    // - Maybe regex can be used in the .thenForwardTo function
     // await server.get(globToRegExp(`${HOST}/*`)).thenForwardTo('http://localhost:3000')
 
     // icons rewrites
