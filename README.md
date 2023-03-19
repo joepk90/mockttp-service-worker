@@ -1,5 +1,6 @@
 # MockTTP Service Worker
-A small project using Mockttp to intercept requests made to example.com, and injecting a functioning Service Worker.
+A small project using Mockttp to intercept requests made to example.com, and injecting a functioning Service Worker. Based on the following example:
+https://github.com/httptoolkit/mockttp-proxy-demo
 
 ## How to use this
 
