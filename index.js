@@ -43,6 +43,10 @@
         'Content-Type': 'application/javascript'
     });
 
+    // Alernative Example:
+    // - pass request straight through to localhost (test a project under https)
+    // await server.get(globToRegExp(`${HOST}/*`)).thenForwardTo('http://localhost:3000')
+
     // icons rewrites
     await server.get(HOST + "/app_icons/manifest-icon-192.png").thenFromFile(200, "./src/app_icons/manifest-icon-192.png");
     await server.get(HOST + "/app_icons/manifest-icon-512.png").thenFromFile(200, "./src/app_icons/manifest-icon-512.png");
